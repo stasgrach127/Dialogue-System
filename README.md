@@ -1,3 +1,3 @@
 Simple Dialogue System for Unity
 
-If you want this (why?), you can take it and use in your project
+If you want to use this in your project (why?), you can take it
