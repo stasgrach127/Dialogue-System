@@ -1,7 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class Dialogue : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class Dialogue : MonoBehaviour
     [Header("Референсы HUDа")]
     [SerializeField] private Image imageHolder;
     [SerializeField] private Text nameHolder;
-    [SerializeField] private Text textHolder;
+    [SerializeField] private TMP_Text textHolder;
     [SerializeField] private GameObject dialogueCanvas;
     #endregion
 
@@ -43,6 +44,7 @@ public class Dialogue : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E) && triggerCheck && canGo)
         {
+            StopCoroutine("PlayText");
             NewPhrase();
             canGo = false;
             StartCoroutine("Proceed");
@@ -54,11 +56,13 @@ public class Dialogue : MonoBehaviour
     private void HideDialogue()
     {
         dialogueCanvas.SetActive(false);
+        characterDialogue.enabled = true;
     }
 
     private void ShowDialogue()
     {
         dialogueCanvas.SetActive(true);
+        characterDialogue.enabled = !characterDialogue.enabled;
     }
 
     void OnTriggerEnter(Collider check)
@@ -113,7 +117,7 @@ public class Dialogue : MonoBehaviour
         foreach (char c in textDialogue[count])
         {
             textHolder.text += c;
-            yield return new WaitForSeconds(0.125f);
+            yield return new WaitForSeconds(0.05f);
         }
     }
 
@@ -124,3 +128,4 @@ public class Dialogue : MonoBehaviour
     }
     #endregion
 }
+
