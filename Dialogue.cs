@@ -4,37 +4,42 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+
 public class Dialogue : MonoBehaviour
 {
+    [System.Serializable]
+    public class DialogueBase
+    {
+        public string nameDialogue;
+        public Sprite spriteDialogue;
+        public AudioClip phrasesDialogue;
+        public Transform positionDialogue;
+        public SpriteRenderer personTalkingDialogue;
+        [TextArea(4, 8)]
+        public string textDialogue;
+    }
+
     #region референсы худа
     [Header("Референсы HUDа")]
     [SerializeField] private Image imageHolder;
-    [SerializeField] private Text nameHolder;
+    [SerializeField] private TMP_Text nameHolder;
     [SerializeField] private TMP_Text textHolder;
     [SerializeField] private GameObject dialogueCanvas;
     #endregion
 
-    #region референсы диалога
-    [Header("Референсы Диалога")]
-    [SerializeField] private AudioSource audioDialogue;
-    [SerializeField] private string[] nameDialogue;
-    [SerializeField] private Sprite[] spriteDialogue;
-    [SerializeField] private AudioClip[] phrasesDialogue;
-    [SerializeField] private Transform[] positionDialogue;
-    [SerializeField] private SpriteRenderer[] personTalkingDialogue;
-    int count;
-    [TextArea(4,8)]
-    [SerializeField] private string[] textDialogue;
-    #endregion
+    public DialogueBase[] dialogueBase;
 
     #region остальные референсы
     [Header("Остальные Референсы")]
     //[SerializeField] private SpriteRenderer characterDialogue;
     [SerializeField] private GameObject playerDialogue;
     [SerializeField] private GameObject cameraDialogue;
+    public AudioSource audioDialogue;
+    int count;
     bool triggerCheck;
     bool canGo;
     bool AutoMode;
+
     Vector3 startPosition;
     #endregion
 
@@ -48,7 +53,7 @@ public class Dialogue : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Mouse0) && triggerCheck && canGo)
-        { 
+        {
             StopCoroutine("PlayText");
             NewPhrase();
             canGo = false;
@@ -94,25 +99,27 @@ public class Dialogue : MonoBehaviour
             ShowDialogue();
             startPosition = cameraDialogue.transform.position;
             playerDialogue.GetComponent<Renderer>().enabled = false;
+            cameraDialogue.GetComponent<MouseLook>().enabled = false;
         }
-        if (count != textDialogue.Length)
+        if (count != dialogueBase.Length)
         {
             textHolder.text = "";
+
             StartCoroutine("PlayText");
             StartCoroutine("SmoothCamera");
-            nameHolder.text = nameDialogue[count];
-            imageHolder.sprite = spriteDialogue[count];
-            personTalkingDialogue[count].sprite = spriteDialogue[count];
-            audioDialogue.clip = phrasesDialogue[count];
+            nameHolder.text = dialogueBase[count].nameDialogue;
+            imageHolder.sprite = dialogueBase[count].spriteDialogue;
+            dialogueBase[count].personTalkingDialogue.sprite = dialogueBase[count].spriteDialogue;
+            audioDialogue.clip = dialogueBase[count].phrasesDialogue;
             audioDialogue.Play();
             if (count > 0)
             {
-                personTalkingDialogue[count].enabled = false;
-                personTalkingDialogue[count - 1].enabled = true;
+                dialogueBase[count].personTalkingDialogue.enabled = false;
+                dialogueBase[count - 1].personTalkingDialogue.enabled = true;
             }
             else
             {
-                personTalkingDialogue[count].enabled = false;
+                dialogueBase[count].personTalkingDialogue.enabled = false;
             }
             count += 1;
         }
@@ -120,24 +127,25 @@ public class Dialogue : MonoBehaviour
         {
             HideDialogue();
             StartCoroutine("SmoothCameraEnd");
-            personTalkingDialogue[count - 1].enabled = true;
+            dialogueBase[count - 1].personTalkingDialogue.enabled = true;
             textHolder.text = "tochange";
             nameHolder.text = "tochange";
             imageHolder.sprite = null;
             audioDialogue.Stop();
             playerDialogue.GetComponent<Renderer>().enabled = true;
+            cameraDialogue.GetComponent<MouseLook>().enabled = true;
             count = 0;
         }
     }
     #endregion
 
     #region нумераторы
-    IEnumerator PlayText() 
+    IEnumerator PlayText()
     {
-        foreach (char c in textDialogue[count])
+        foreach (char c in dialogueBase[count].textDialogue)
         {
             textHolder.text += c;
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.02f);
         }
     }
 
@@ -157,7 +165,7 @@ public class Dialogue : MonoBehaviour
     {
         float timeToArrive = 0f;
         Vector3 startPos = cameraDialogue.transform.position;
-        Vector3 endPos = positionDialogue[count].position;
+        Vector3 endPos = dialogueBase[count].positionDialogue.position;
         while (timeToArrive < 1)
         {
             timeToArrive += Time.deltaTime / 0.2f;
